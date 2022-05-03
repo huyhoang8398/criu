@@ -326,9 +326,9 @@ def explore_rss(opts):
         pvmi = -1
         for pm in pms[1:]:
             pstr = '\t%lx / %-8d' % (pm['vaddr'], pm['nr_pages'])
+            print('%s' % pstr)
             while vmas[vmi]['end'] <= pm['vaddr']:
                 vmi += 1
-
             pme = pm['vaddr'] + (pm['nr_pages'] << 12)
             vstr = ''
             while vmas[vmi]['start'] < pme:

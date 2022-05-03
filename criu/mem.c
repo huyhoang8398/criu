@@ -183,6 +183,7 @@ static int generate_iovs(struct pstree_item *item, struct vma_area *vma, struct 
 			continue;
 
 		vaddr = vma->e->start + *off + pfn * PAGE_SIZE;
+		printf("debug %lx nr_page %lu offset %lu\n ", vaddr, PAGE_SIZE >> PAGE_SHIFT, *off);
 
 		if (vma_entry_can_be_lazy(vma->e) && !is_stack(item, vaddr))
 			ppb_flags |= PPB_LAZY;
@@ -208,6 +209,7 @@ static int generate_iovs(struct pstree_item *item, struct vma_area *vma, struct 
 		if (ret) {
 			/* Do not do pfn++, just bail out */
 			pr_debug("Pagemap full\n");
+			printf("pagemap full %d", ret);
 			break;
 		}
 
@@ -273,6 +275,8 @@ static int drain_pages(struct page_pipe *pp, struct parasite_ctl *ctl, struct pa
 		args->nr_pages = ppb->pages_in;
 		pr_debug("PPB: %d pages %d segs %u pipe %d off\n", args->nr_pages, args->nr_segs, ppb->pipe_size,
 			 args->off);
+		
+		printf("Hoang debug nr_page %d offset %u\n ", args->nr_pages, args->off);
 
 		ret = compel_rpc_call(PARASITE_CMD_DUMPPAGES, ctl);
 		if (ret < 0)
