@@ -20,7 +20,10 @@
         "unordered_map": "c",
         "vector": "c",
         "string_view": "c",
-        "initializer_list": "c"
+        "initializer_list": "c",
+        "types.h": "c",
+        "vma.pb-c.h": "c",
+        "core.pb-c.h": "c"
     },
     "files.exclude": {
         "**/*.d": true,

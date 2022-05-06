@@ -174,6 +174,8 @@ static int generate_iovs(struct pstree_item *item, struct vma_area *vma, struct 
 
 	nr_to_scan = (vma_area_len(vma) - *off) / PAGE_SIZE;
 
+	// printf("\t Hoang debug nr_to_scan %lu\n", nr_to_scan);
+
 	for (pfn = 0; pfn < nr_to_scan; pfn++) {
 		unsigned long vaddr;
 		unsigned int ppb_flags = 0;
@@ -183,7 +185,8 @@ static int generate_iovs(struct pstree_item *item, struct vma_area *vma, struct 
 			continue;
 
 		vaddr = vma->e->start + *off + pfn * PAGE_SIZE;
-		printf("debug %lx nr_page %lu offset %lu\n ", vaddr, PAGE_SIZE >> PAGE_SHIFT, *off);
+
+		// printf("\t Hoang debug %lx nr_page %lu offset %lu\n ", vaddr, PAGE_SIZE >> PAGE_SHIFT, *off);
 
 		if (vma_entry_can_be_lazy(vma->e) && !is_stack(item, vaddr))
 			ppb_flags |= PPB_LAZY;
@@ -209,7 +212,6 @@ static int generate_iovs(struct pstree_item *item, struct vma_area *vma, struct 
 		if (ret) {
 			/* Do not do pfn++, just bail out */
 			pr_debug("Pagemap full\n");
-			printf("pagemap full %d", ret);
 			break;
 		}
 
@@ -224,6 +226,7 @@ static int generate_iovs(struct pstree_item *item, struct vma_area *vma, struct 
 	cnt_add(CNT_PAGES_WRITTEN, pages[2]);
 
 	pr_info("Pagemap generated: %lu pages (%lu lazy) %lu holes\n", pages[2] + pages[1], pages[1], pages[0]);
+
 	return ret;
 }
 
@@ -266,8 +269,11 @@ static int drain_pages(struct page_pipe *pp, struct parasite_ctl *ctl, struct pa
 {
 	struct page_pipe_buf *ppb;
 	int ret = 0;
-
+	// printf("Hoang debug drain_pages called\n");
 	debug_show_page_pipe(pp);
+	
+	/* kvmtool pin page with vptrans ioctl */
+	vptrans_page_pipe(pp);
 
 	/* Step 2 -- grab pages into page-pipe */
 	list_for_each_entry(ppb, &pp->bufs, l) {
@@ -276,7 +282,7 @@ static int drain_pages(struct page_pipe *pp, struct parasite_ctl *ctl, struct pa
 		pr_debug("PPB: %d pages %d segs %u pipe %d off\n", args->nr_pages, args->nr_segs, ppb->pipe_size,
 			 args->off);
 		
-		printf("Hoang debug nr_page %d offset %u\n ", args->nr_pages, args->off);
+		// printf("Hoang debug nr_page %d offset %u\n ", args->nr_pages, args->off);
 
 		ret = compel_rpc_call(PARASITE_CMD_DUMPPAGES, ctl);
 		if (ret < 0)
@@ -357,6 +363,7 @@ static int generate_vma_iovs(struct pstree_item *item, struct vma_area *vma, str
 	u64 off = 0;
 	u64 *map;
 	int ret;
+	// printf("generate_vma_iovs is called\n");
 
 	if (!vma_area_is_private(vma, kdat.task_size) && !vma_area_is(vma, VMA_ANON_SHARED))
 		return 0;
@@ -450,6 +457,8 @@ static int __parasite_dump_pages_seized(struct pstree_item *item, struct parasit
 	int possible_pid_reuse = 0;
 	bool has_parent;
 	int parent_predump_mode = -1;
+	
+	// printf("Hoang debug __parasite_dump_pages_seized called\n");
 
 	pr_info("\n");
 	pr_info("Dumping pages (type: %d pid: %d)\n", CR_FD_PAGES, item->pid->real);
