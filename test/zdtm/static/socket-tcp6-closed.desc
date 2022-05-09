@@ -1,1 +1,1 @@
-socket-tcp-closed.desc
+{'opts': '--tcp-established', 'flags': 'nouser samens', 'feature' : 'tcp_half_closed', 'flavor' : 'ns uns'}

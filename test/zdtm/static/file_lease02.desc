@@ -1,1 +1,1 @@
-file_lease00.desc
+{'feature': 'fdinfo_lock', 'opts': '--file-locks'}

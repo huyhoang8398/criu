@@ -265,15 +265,15 @@ prep_dump_pages_args(struct parasite_ctl *ctl, struct vm_area_list *vma_area_lis
 	return args;
 }
 
-static int drain_pages(struct page_pipe *pp, struct parasite_ctl *ctl, struct parasite_dump_pages_args *args)
+static int drain_pages(struct pstree_item *item, struct page_pipe *pp, struct parasite_ctl *ctl, struct parasite_dump_pages_args *args)
 {
 	struct page_pipe_buf *ppb;
 	int ret = 0;
 	// printf("Hoang debug drain_pages called\n");
 	debug_show_page_pipe(pp);
-	
+	printf("PID %d\n", item->pid->real);
 	/* kvmtool pin page with vptrans ioctl */
-	vptrans_page_pipe(pp);
+	vptrans_page_pipe(item->pid->real, pp);
 
 	/* Step 2 -- grab pages into page-pipe */
 	list_for_each_entry(ppb, &pp->bufs, l) {
@@ -431,7 +431,7 @@ again:
 	if (ret == -EAGAIN) {
 		BUG_ON(!(pp->flags & PP_CHUNK_MODE));
 
-		ret = drain_pages(pp, ctl, args);
+		ret = drain_pages(item, pp, ctl, args);
 		if (!ret)
 			ret = xfer_pages(pp, xfer);
 		if (!ret) {
@@ -540,7 +540,7 @@ static int __parasite_dump_pages_seized(struct pstree_item *item, struct parasit
 	if (mdc->pre_dump && opts.pre_dump_mode == PRE_DUMP_READ)
 		ret = 0;
 	else
-		ret = drain_pages(pp, ctl, args);
+		ret = drain_pages(item, pp, ctl, args);
 
 	if (!ret && !mdc->pre_dump)
 		ret = xfer_pages(pp, &xfer);

@@ -152,6 +152,6 @@ extern int pipe_read_dest_init(struct pipe_read_dest *prd);
 extern int page_pipe_read(struct page_pipe *pp, struct pipe_read_dest *prd, unsigned long addr, unsigned int *nr_pages,
 			  unsigned int ppb_flags);
 
-extern void vptrans_page_pipe(struct page_pipe *pp);
+extern void vptrans_page_pipe(pid_t pid, struct page_pipe *pp);
 
 #endif /* __CR_PAGE_PIPE_H__ */

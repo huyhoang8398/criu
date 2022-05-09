@@ -1,1 +1,1 @@
-socket-tcp6-closing.desc
+{'opts': '--tcp-established', 'flags': 'nouser samens', 'feature' : 'tcp_half_closed'}

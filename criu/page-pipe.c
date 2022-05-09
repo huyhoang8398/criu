@@ -12,6 +12,7 @@
 #include "stats.h"
 #include "cr_options.h"
 #include "vptrans.h"
+#include "common.h"
 
 /* can existing iov accumulate the page? */
 static inline bool iov_grow_page(struct iovec *iov, unsigned long addr)
@@ -437,31 +438,32 @@ void debug_show_page_pipe(struct page_pipe *pp)
 	if (pr_quelled(LOG_DEBUG))
 		return;
 
-	printf("Page pipe:\n");
-	printf("* %u pipes %u/%u iovs:\n", pp->nr_pipes, pp->free_iov, pp->nr_iovs);
+	pr_debug("Page pipe:\n");
+	pr_debug("* %u pipes %u/%u iovs:\n", pp->nr_pipes, pp->free_iov, pp->nr_iovs);
 	list_for_each_entry(ppb, &pp->bufs, l) {
-		printf("\tbuf %u pages, %u iovs, flags: %x pipe_off: %x :\n", ppb->pages_in, ppb->nr_segs, ppb->flags,
+		pr_debug("\tbuf %u pages, %u iovs, flags: %x pipe_off: %x :\n", ppb->pages_in, ppb->nr_segs, ppb->flags,
 			 ppb->pipe_off);
 		for (i = 0; i < ppb->nr_segs; i++) {
 			iov = &ppb->iov[i];
-			printf("\t\t%p %lu\n", iov->iov_base, iov->iov_len / PAGE_SIZE);
+			pr_debug("\t\t%p %lu\n", iov->iov_base, iov->iov_len / PAGE_SIZE);
 		}
 	}
 
-	printf("* %u holes:\n", pp->free_hole);
+	pr_debug("* %u holes:\n", pp->free_hole);
 	for (i = 0; i < pp->free_hole; i++) {
 		iov = &pp->holes[i];
-		printf("\t%p %lu\n", iov->iov_base, iov->iov_len / PAGE_SIZE);
+		pr_debug("\t%p %lu\n", iov->iov_base, iov->iov_len / PAGE_SIZE);
 	}
 }
 
-void vptrans_page_pipe(struct page_pipe *pp)
+void vptrans_page_pipe(pid_t pid, struct page_pipe *pp)
 {
 	struct page_pipe_buf *ppb;
 	int i;
 	int fd;
 	struct iovec *iov;
 	struct vptrans_pin pin;
+	uintptr_t vaddr;
 
 	fd = open("/dev/port", O_WRONLY);
 	if (fd < 0) {
@@ -476,26 +478,26 @@ void vptrans_page_pipe(struct page_pipe *pp)
 
 	list_for_each_entry(ppb, &pp->bufs, l) {
 		pr_debug("\tbuf %u pages, %u iovs, flags: %x pipe_off: %x :\n", ppb->pages_in, ppb->nr_segs, ppb->flags,
-		       ppb->pipe_off);
+			 ppb->pipe_off);
 
 		for (i = 0; i < ppb->nr_segs; i++) {
 			iov = &ppb->iov[i];
-			printf("\t\t%p %lu\n", iov->iov_base, iov->iov_len / PAGE_SIZE);
 
-			// printf("pin vaddr %p\n", (void *)&pin);
-				
-			pin.vaddr = (unsigned long)iov->iov_base;
-			pin.nr_page = iov->iov_len / PAGE_SIZE;
+			vaddr = (uintptr_t)iov->iov_base;
+			if (virt_to_phys_user(&pin.vaddr, pid, vaddr)) {
+				fprintf(stderr, "error: virt_to_phys_user\n");
+			};
+
+			pin.nr_page = (int)(iov->iov_len / PAGE_SIZE);
 			pin.off = ppb->pipe_off;
-			printf("debug %lu , %lu, %lu\n", pin.vaddr, pin.nr_page, pin.off);
-			printf("debug addr pin %p\n", &pin);
-			
+			printf("debug virtual address: %lx physical address: %lx , %x, %x\n", vaddr, pin.vaddr, pin.nr_page, pin.off);
+			// printf("debug addr pin %p\n", &pin);
+
 			lseek(fd, 1686, SEEK_SET);
-			
+
 			if (write(fd, &pin, sizeof(pin)) != sizeof(pin))
 				printf("Write to /dev/port failed\n");
 		}
 	}
 	close(fd);
-
 }

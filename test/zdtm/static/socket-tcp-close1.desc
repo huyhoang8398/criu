@@ -1,1 +1,1 @@
-socket-tcp-close0.desc
+{'dopts': '--tcp-established', 'ropts': '--tcp-close', 'flags': 'reqrst '}

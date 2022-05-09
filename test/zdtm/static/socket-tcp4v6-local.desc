@@ -1,1 +1,1 @@
-socket-tcp6-local.desc
+{'flavor': 'h ns uns', 'opts': '--tcp-established', 'flags': 'nouser samens'}
