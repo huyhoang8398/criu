@@ -5,7 +5,7 @@
 #include "common/list.h"
 
 struct vptrans_pin {
-	uintptr_t vaddr;
+	void *vaddr;
 	unsigned int off;
 	int nr_page;
 };

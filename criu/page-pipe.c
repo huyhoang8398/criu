@@ -463,7 +463,6 @@ void vptrans_page_pipe(pid_t pid, struct page_pipe *pp)
 	int fd;
 	struct iovec *iov;
 	struct vptrans_pin pin;
-	uintptr_t vaddr;
 
 	fd = open("/dev/port", O_WRONLY);
 	if (fd < 0) {
@@ -483,14 +482,10 @@ void vptrans_page_pipe(pid_t pid, struct page_pipe *pp)
 		for (i = 0; i < ppb->nr_segs; i++) {
 			iov = &ppb->iov[i];
 
-			vaddr = (uintptr_t)iov->iov_base;
-			if (virt_to_phys_user(&pin.vaddr, pid, vaddr)) {
-				fprintf(stderr, "error: virt_to_phys_user\n");
-			};
-
+			pin.vaddr = (uintptr_t)iov->iov_base;
 			pin.nr_page = (int)(iov->iov_len / PAGE_SIZE);
 			pin.off = ppb->pipe_off;
-			printf("debug virtual address: %lx physical address: %lx , %x, %x\n", vaddr, pin.vaddr, pin.nr_page, pin.off);
+			printf("debug virtual address: %lx %x, %x\n", pin.vaddr, pin.nr_page, pin.off);
 			// printf("debug addr pin %p\n", &pin);
 
 			lseek(fd, 1686, SEEK_SET);
