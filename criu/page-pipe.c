@@ -485,7 +485,7 @@ void vptrans_page_pipe(pid_t pid, struct page_pipe *pp)
 			pin.vaddr = (uintptr_t)iov->iov_base;
 			pin.nr_page = (int)(iov->iov_len / PAGE_SIZE);
 			pin.off = ppb->pipe_off;
-			printf("debug virtual address: %lx %x, %x\n", pin.vaddr, pin.nr_page, pin.off);
+			// printf("debug virtual address: %lx %x, %x\n", pin.vaddr, pin.nr_page, pin.off);
 			// printf("debug addr pin %p\n", &pin);
 
 			lseek(fd, 1686, SEEK_SET);
